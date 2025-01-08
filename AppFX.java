@@ -1,9 +1,11 @@
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.stream.Stream;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -16,6 +18,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DialogEvent;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyEvent;
@@ -27,6 +31,8 @@ public class AppFX extends Application {
     @Override
     public void start(Stage primaryStage) {
         Button btn = new Button();
+        TextField txt = new TextField();
+        var myButton = new TestClass();
         btn.setText("Say 'Hello World'");
         btn.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -35,14 +41,25 @@ public class AppFX extends Application {
                 System.out.println("Hello World!");
                 var client = HttpClient.newHttpClient();
                 var request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:1234/home"))
+                    .uri(URI.create("http://localhost:5182/Captcha/CreateCaptcha"))
                     .build();
 
                 var alert = new Alert(Alert.AlertType.ERROR);
 
                 try {
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    alert.setContentText(response.body());
+                    HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                   // alert.setContentText(response.body());
+                   // System.out.println(response.body().readAllBytes());
+                    Image img = new Image(response.body());
+
+                    ImageView imgView = new ImageView();
+
+                    imgView.setImage(img);
+                    alert.setHeight(400);
+                    alert.setWidth(700);
+                    imgView.setFitWidth(400);
+                    imgView.setFitHeight(200);
+                    alert.setGraphic(imgView);
                 } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -58,7 +75,7 @@ public class AppFX extends Application {
                 });
             }
         });
-        TextField txt = new TextField();
+
         txt.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -80,11 +97,19 @@ public class AppFX extends Application {
         var children = root.getChildren();
         StackPane node = new StackPane();
         node.setAlignment(Pos.BOTTOM_CENTER);
+
+        StackPane nodeSpacer = new StackPane();
+        nodeSpacer.setAlignment(Pos.TOP_RIGHT);
+        nodeSpacer.getChildren().add(myButton);
+        node.getChildren().add(nodeSpacer);
         node.getChildren().add(txt);
         node.setStyle("-fx-padding: 10");
         children.add(node);
         btn.setStyle("-fx-color: red");
         children.add(btn);
+
+
+
 
         root.setStyle("-fx-background-color: blue");
         Scene scene = new Scene(root, 300, 250);
